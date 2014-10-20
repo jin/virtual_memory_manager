@@ -7,17 +7,17 @@ class TestVirtualAddress < Test::Unit::TestCase
   # 0, 12, 511, 434
   def test_valid_virtual_address
     vaddr = VirtualAddress.new(6553522)
-    assert_equal(false, vaddr.nil?)
+    assert_not_nil(vaddr)
   end
 
   def test_valid_virtual_address_min
     vaddr = VirtualAddress.new(0)
-    assert_equal(false, vaddr.nil?)
+    assert_not_nil(vaddr)
   end
 
   def test_invalid_virtual_address_max
     vaddr = VirtualAddress.new(4294967295)
-    assert_equal(false, vaddr.nil?)
+    assert_not_nil(vaddr)
   end
 
   def test_invalid_virtual_address_large
@@ -44,7 +44,3 @@ class TestVirtualAddress < Test::Unit::TestCase
   end
 
 end
-
-
-
-

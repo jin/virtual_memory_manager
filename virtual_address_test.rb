@@ -15,7 +15,7 @@ class TestVirtualAddress < Test::Unit::TestCase
     assert_not_nil(vaddr)
   end
 
-  def test_invalid_virtual_address_max
+  def test_valid_virtual_address_max
     vaddr = VirtualAddress.new(4294967295)
     assert_not_nil(vaddr)
   end

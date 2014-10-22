@@ -1,7 +1,7 @@
 class Frame
   attr_reader :words
 
-  def initialize(size)
+  def initialize(size = 512)
     @words = Array.new(size)
   end
 

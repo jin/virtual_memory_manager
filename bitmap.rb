@@ -5,8 +5,8 @@ class Bitmap
   # false => free
   # true  => occupied
 
-  def initialize(options = {})
-    @map = Array.new(options[:size], false)
+  def initialize(size = 1024)
+    @map = Array.new(size, false)
   end
 
   def is_set?(bit)

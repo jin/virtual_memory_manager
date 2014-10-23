@@ -1,53 +1,45 @@
 require_relative 'frame'
 require_relative 'bitmap'
+require_relative 'segment_table'
+require_relative 'page_table'
 
 class PhysicalMemory
 
-  attr_reader :memory_map, :bitmap
+  attr_reader :bitmap, :frames
+  attr_accessor :segment_table
 
   # 1024 frames of 512 words each
   def initialize(frames = 1024)
-    @bitmap = Array.new(frames)
-    @memory_map = {}
+    @bitmap = Bitmap.new(frames)
+    @frames = {}
 
     init_segment_table
   end
 
-  def is_free_frame?(index)
-    @bitmap.is_set? index
+  # only called at initialization
+  def create_page_table(segment, paddr)
+    segment_table.set_segment(segment, paddr.frame)
+    @frames[paddr.frame] = PageTable.new(1024)
+    @bitmap.set(paddr.frame)
+    @bitmap.set(paddr.frame + 1)
   end
 
-  def get_segment_table
-    @memory_map[0]
+  def get_page_table(index)
   end
 
-  def get_page_table_at(index)
-
-  end
-
-  def set_page_table_at(index)
-    @memory_map[index] = PageTable.new
-    @bitmap.set index
-    @bitmap.set index + 1
-  end
-
-  def get_page_at(index) 
-    @memory_map[index]
-  end
-
-  def set_page_at(index)
-    @memory_map[index] = Frame.new
-    @bitmap.set index
-  end
-
-  def get_word_at(frame, offset)
-    return frame.get_word_at(offset)
+  def create_page(page, segment, paddr)
+    page_table = @frames[segment_table.get_segment(segment)]
+    page_table.set_page(page, paddr.frame)
+    p @segment_table
+    p @frames
+    p page_table
   end
 
   private
 
   def init_segment_table
-    @memory_map[0] = SegmentTable.new
+    @segment_table = SegmentTable.new
+    @frames[0] = @segment_table
     @bitmap.set 0
   end
 

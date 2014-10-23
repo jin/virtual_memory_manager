@@ -1,4 +1,6 @@
-class VirtualAddress
+require_relative 'address'
+
+class VirtualAddress < Address
 
   attr_reader :segment, :page, :offset, :address
 

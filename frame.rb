@@ -1,8 +1,11 @@
 class Frame
   attr_reader :words
+  attr_reader :size
 
   def initialize(size = 512)
-    @words = Array.new(size)
+    # @words = Array.new(size)
+    @words = Hash.new
+    @size = size
   end
 
   def get_word_at(index)

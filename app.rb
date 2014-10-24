@@ -28,6 +28,7 @@ class App
   def apply_segment_table_config(config)
     config.split.map { |token| token.to_i }.each_slice(2) do |slice|
       segment, paddr = slice.first, PhysicalAddress.new(slice.last)
+      puts "====="
       puts "Creating page table for segment #{segment} starting at frame #{paddr.inspect}"
       @physical_memory.create_page_table(segment, paddr)
     end
@@ -36,6 +37,7 @@ class App
   def apply_page_table_config(config)
     config.split.map { |token| token.to_i }.each_slice(3) do |slice|
       page, segment, paddr = slice[0], slice[1], PhysicalAddress.new(slice[2])
+      puts "====="
       puts "Creating page #{page} for segment #{segment} starting at frame #{paddr.inspect} "
       @physical_memory.create_page(page, segment, paddr)
       # @physical_memory.set_page(:segment => segment, :page => page, :frame => frame / 512)
@@ -51,7 +53,26 @@ class App
   end
 
   def evaluate_physical_address(operation, vaddr)
-    p operation, vaddr
+    case operation
+    when :read then print read(vaddr)
+    when :write then print write(vaddr)
+    end
+  end
+
+  def read(vaddr)
+    puts "====="
+    puts "Reading #{vaddr.inspect}"
+
+    page_table = @physical_memory.get_page_table(vaddr.segment)
+    return "error" if page_table.nil?
+
+    page = @physical_memory.get_page(page_table)
+
+  end
+
+  def write(vaddr)
+    puts "====="
+    puts "Writing to #{vaddr.inspect}"
   end
 
 end

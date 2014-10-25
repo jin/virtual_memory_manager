@@ -12,19 +12,19 @@ class PhysicalMemory
   # 1024 frames of 512 words each
   def initialize(frames = 1024)
     @bitmap = Bitmap.new(frames)
-    @frames = {}
+    $frames = {}
 
     init_segment_table
   end
 
   def get_word(frame, offset)
-    @frames[frame][offset]
+    $frames[frame][offset]
   end
 
   # only called at initialization
   def create_page_table(segment, paddr)
     segment_table.set_segment(segment, paddr.frame)
-    @frames[paddr.frame] = PageTable.new(1024)
+    $frames[paddr.frame + 1] = $frames[paddr.frame] = PageTable.new(1024)
     @bitmap.set(paddr.frame)
     @bitmap.set(paddr.frame + 1)
   end
@@ -34,21 +34,24 @@ class PhysicalMemory
   end
 
   def create_page(page, segment, paddr)
-    page_table = @frames[segment_table.get_segment(segment)]
+    page_table = $frames[segment_table.get_segment(segment)]
     page_table.set_page(page, paddr.frame)
     if paddr.frame >= 0
-      @frames[paddr.frame] = Frame.new(512)
-      @bitmap.set(paddr.frame)
+      $frames[paddr.frame] ||= Frame.new(512)
+      $frames[paddr.frame].set_word(paddr.offset, true)
     end
-    pp @frames
+  end
+
+  def get_page(page_table, page)
+    pt = $frames[page_table]
+    pt.get_page(page)
   end
 
   private
 
   def init_segment_table
     @segment_table = SegmentTable.new
-    @frames[0] = @segment_table
-    @bitmap.set 0
+    $frames[0] = @segment_table
   end
 
 end

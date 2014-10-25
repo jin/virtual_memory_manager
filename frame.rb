@@ -8,11 +8,11 @@ class Frame
     @size = size
   end
 
-  def get_word_at(index)
+  def get_word(index)
     @words[index]
   end
 
-  def set_word_at(index, value)
+  def set_word(index, value)
     @words[index] = value
   end
 end

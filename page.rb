@@ -1,0 +1,2 @@
+class Page < Frame
+end

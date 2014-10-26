@@ -2,8 +2,8 @@
 require 'PP'
 
 require_relative 'virtual_address'
-require_relative 'physical_memory'
 require_relative 'physical_address'
+require_relative 'physical_memory_manager'
 
 class App
 
@@ -13,7 +13,12 @@ class App
     initialization_file = ARGV[0]
     input_file = ARGV[1]
 
-    @physical_memory = PhysicalMemory.new
+    puts "-----------------------------------------------"
+    puts "initializing.."
+    puts "-----------------------------------------------"
+
+    @physical_memory_manager = PhysicalMemoryManager.new
+    pp $frames
 
     initialize_with IO.readlines(initialization_file)
     process_virtual_addresses_from IO.readlines(input_file).first
@@ -30,8 +35,8 @@ class App
     config.split.map(&:to_i).each_slice(2) do |slice|
       segment, paddr = slice.first, PhysicalAddress.new(slice.last)
       puts "====="
-      puts "Creating page table for segment #{segment} starting at frame #{paddr.inspect}"
-      @physical_memory.create_page_table(segment, paddr)
+      puts "Creating page table for segment #{segment} at #{paddr.inspect}"
+      @physical_memory_manager.init_page_table(segment, paddr.frame)
       pp $frames
     end
   end
@@ -40,8 +45,8 @@ class App
     config.split.map(&:to_i).each_slice(3) do |slice|
       page, segment, paddr = slice[0], slice[1], PhysicalAddress.new(slice[2])
       puts "====="
-      puts "Creating page #{page} for segment #{segment} starting at frame #{paddr.inspect} "
-      @physical_memory.create_page(page, segment, paddr)
+      puts "Creating page #{page} for segment #{segment} at #{paddr.inspect} "
+      @physical_memory_manager.init_page(segment, page, paddr.frame)
       pp $frames
     end
   end
@@ -81,6 +86,11 @@ class App
 
     page_table = @physical_memory.get_page_table(vaddr.segment)
     # create page table if page_table.nil?
+    @physical_memory.create_page_table(vaddr) if page_table.nil?
+
+    page = @physical_memory.get_page(page_table, vaddr.page)
+    @physical_memory.create_page(vaddr)
+    
   end
 
 end

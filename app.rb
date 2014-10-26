@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require 'PP'
+require 'pp'
 
 require_relative 'virtual_address'
 require_relative 'physical_address'
@@ -9,7 +9,7 @@ class App
 
   attr_accessor :physical_memory
 
-  def start 
+  def start
     initialization_file = ARGV[0]
     input_file = ARGV[1]
 

@@ -2,13 +2,9 @@ require_relative 'frame'
 require_relative 'page'
 require_relative 'segment_table'
 require_relative 'page_table'
-require 'PP'
 
 class PhysicalMemoryManager
 
-  # attr_reader :bitmap, :frames
-  # attr_accessor :segment_table
-  
   attr_accessor :frames, :segment_table
 
   # 1024 frames of 512 words each
@@ -37,17 +33,46 @@ class PhysicalMemoryManager
     page.set_word(with_offset, true)
   end
 
+  #	For a read operation to the VA:
+  #	If a ST entry (PM[s]) or a PT entry (PM[PM[s] + p]) equals ‒1 then output “pf” (page fault) and continue with the next VA.
+  #	If a ST entry or a PT entry equals 0, then output “error” and continue with the next VA.
+  #	Otherwise output the corresponding PA = PM[PM[s] + p] + w
   def read_from(vaddr)
-    pt = $frames.get_word(@segment_table.get_segment(vaddr.segment))
-    return "error" if pt.nil?
+    st_entry = @segment_table.get_segment(vaddr.segment)
+    return "pf" if st_entry == -1
+    return "error" if st_entry == 0
 
-    page = $frames.get_word(pt.get_page(vaddr.page))
-    return "error" if page.nil?
+    pt = $frames.get_word(st_entry)
 
-    page.get_word(vaddr.offset) ? pt.get_page(vaddr.page) * 512 + vaddr.offset : "error"
+    pt_entry = pt.get_page(vaddr.page)
+    return "pf" if pt_entry == -1
+    return "error" if pt_entry == 0
+
+    page = $frames.get_word(pt_entry)
+
+    page.get_word(vaddr.offset) ? pt_entry * 512 + vaddr.offset : "error"
   end
 
+
+  #	For a write operation to the VA:
+  #	If a ST entry or a PT entry equals ‒1 then output “pf” (page fault) and continue with the next VA.
+  #	If a ST entry equals 0 then allocate a new blank PT (all zeroes), update the ST entry accordingly, and continue with the translation process; if a PT entry equals 0 then create a new blank page, and continue with the translation process.
+  #	Otherwise output the corresponding PA = PM[PM[s] + p] + w
   def write_to(vaddr)
+    st_entry = @segment_table.get_segment(vaddr.segment)
+    return "pf" if st_entry == -1
+    # create page table if st_entry == 0
+    
+    pt = $frames.get_word(st_entry)
+
+    pt_entry = pt.get_page(vaddr.page)
+    return "pf" if pt_entry == -1
+    # create page if pt_entry == 0
+    
+    page = $frames.get_word(pt_entry)
+    page.set_word(vaddr.offset, true)
+
+    return pt_entry * 512 + vaddr.offset
   end
 
   private

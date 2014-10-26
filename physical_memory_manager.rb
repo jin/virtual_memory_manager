@@ -18,6 +18,7 @@ class PhysicalMemoryManager
     init_segment_table
   end
 
+  # Called only at initialization stage
   def init_page_table(for_segment, at_frame)
     @segment_table.set_segment(for_segment, at_frame)
 
@@ -25,36 +26,29 @@ class PhysicalMemoryManager
     $frames.set_word(at_frame, pt)
   end
 
-  def init_page(for_segment, page_number, at_frame)
+  # Called only at initialization stage
+  def init_page(for_segment, page_number, at_frame, with_offset)
     page_table = $frames.get_word(@segment_table.get_segment(for_segment))
-    page_table.set_page(0, at_frame)
+    page_table.set_page(page_number, at_frame)
 
     page = Page.new(512)
     $frames.set_word(at_frame, page) unless at_frame < 0
+
+    page.set_word(with_offset, true)
   end
 
-  # #-------------------
-  
+  def read_from(vaddr)
+    pt = $frames.get_word(@segment_table.get_segment(vaddr.segment))
+    return "error" if pt.nil?
 
-  # def create_page_table(vaddr)
-  # end
+    page = $frames.get_word(pt.get_page(vaddr.page))
+    return "error" if page.nil?
 
-  # def create_page(vaddr)
-  #   pt = $frames[get_page_table(vaddr.segment)]
-  # end
+    page.get_word(vaddr.offset) ? pt.get_page(vaddr.page) * 512 + vaddr.offset : "error"
+  end
 
-  # def get_word(frame, offset)
-  #   $frames[frame][offset]
-  # end
-
-  # def get_page_table(segment)
-  #   segment_table.get_segment(segment)
-  # end
-
-  # def get_page(page_table, page)
-  #   pt = $frames[page_table]
-  #   pt.get_page(page)
-  # end
+  def write_to(vaddr)
+  end
 
   private
 

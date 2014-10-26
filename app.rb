@@ -46,7 +46,7 @@ class App
       page, segment, paddr = slice[0], slice[1], PhysicalAddress.new(slice[2])
       puts "====="
       puts "Creating page #{page} for segment #{segment} at #{paddr.inspect} "
-      @physical_memory_manager.init_page(segment, page, paddr.frame)
+      @physical_memory_manager.init_page(segment, page, paddr.frame, paddr.offset)
       pp $frames
     end
   end
@@ -70,27 +70,14 @@ class App
   def read(vaddr)
     puts "====="
     puts "Reading #{vaddr.inspect}"
-
-    page_table = @physical_memory.get_page_table(vaddr.segment)
-    return "error" if page_table.nil?
-
-    page = @physical_memory.get_page(page_table, vaddr.page)
-    return "error" if page.nil?
-
-    512 * page + vaddr.offset
+    @physical_memory_manager.read_from(vaddr)
   end
 
   def write(vaddr)
     puts "====="
     puts "Writing to #{vaddr.inspect}"
 
-    page_table = @physical_memory.get_page_table(vaddr.segment)
-    # create page table if page_table.nil?
-    @physical_memory.create_page_table(vaddr) if page_table.nil?
-
-    page = @physical_memory.get_page(page_table, vaddr.page)
-    @physical_memory.create_page(vaddr)
-    
+    @physical_memory_manager.write_to(vaddr)
   end
 
 end

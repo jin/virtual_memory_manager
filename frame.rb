@@ -1,11 +1,9 @@
 require_relative 'bitmap'
 
 class Frame
-  attr_reader :words, :size
 
   def initialize(size = 512)
     @words = Hash.new
-    @size = size
   end
 
   def get_word(index)

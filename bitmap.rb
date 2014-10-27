@@ -2,11 +2,6 @@ require 'bitset'
 
 class Bitmap
 
-  # Bitmap for keeping track of free frames
-  # Size = 1024 bits
-  # false => free
-  # true  => occupied
-  
   attr_reader :bitset
   
   def initialize(size = 1024)

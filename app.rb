@@ -1,87 +1,14 @@
 #!/usr/bin/env ruby
 require 'PP'
 require 'optparse'
-
 require_relative 'virtual_address'
 require_relative 'physical_address'
 require_relative 'physical_memory_manager'
+require_relative 'tlb'
 
-class App
-
-  attr_accessor :physical_memory
-
-  def initialize(options)
-    @options = options
-  end
-
-  def start
-    initialization_file = @options[:config]
-    input_file = @options[:input]
-
-    # puts "-----------------------------------------------"
-    # puts "initializing.."
-    # puts "-----------------------------------------------"
-
-    @physical_memory_manager = PhysicalMemoryManager.new
-
-    initialize_with IO.readlines(initialization_file)
-    process_virtual_addresses_from IO.readlines(input_file).first
-    puts
-  end
-
-  def initialize_with(instructions)
-    # puts "Applying configuration.."
-    apply_segment_table_config(instructions.first) # first line of initialization.txt
-    apply_page_table_config(instructions.last)     # second line of initialization.txt
-  end
-
-  def apply_segment_table_config(config)
-    config.split.map(&:to_i).each_slice(2) do |slice|
-      segment, paddr = slice.first, PhysicalAddress.new(slice.last)
-      # puts "====="
-      # puts "Creating page table for segment #{segment} at #{paddr.inspect}"
-      @physical_memory_manager.init_page_table(segment, paddr)
-    end
-  end
-
-  def apply_page_table_config(config)
-    config.split.map(&:to_i).each_slice(3) do |slice|
-      page, segment, paddr = slice[0], slice[1], PhysicalAddress.new(slice[2])
-      # puts "====="
-      # puts "Creating page #{page} for segment #{segment} at #{paddr.inspect} "
-      @physical_memory_manager.init_page(segment, page, paddr)
-    end
-  end
-
-  def process_virtual_addresses_from(lines)
-    lines.split.map(&:to_i).each_slice(2) do |slice|
-      rw_bit, vaddr = slice.first, VirtualAddress.new(slice.last)
-      operation = rw_bit > 0 ? :write : :read
-      evaluate_physical_address(operation, vaddr)
-    end
-  end
-
-  def evaluate_physical_address(operation, vaddr)
-    case operation
-    when :read then print read(vaddr)
-    when :write then print write(vaddr)
-    end
-    print " "
-  end
-
-  def read(vaddr)
-    # puts "====="
-    # puts "Reading #{vaddr.inspect}"
-    @physical_memory_manager.read_from(vaddr)
-  end
-
-  def write(vaddr)
-    # puts "====="
-    # puts "Writing to #{vaddr.inspect}"
-    @physical_memory_manager.write_to(vaddr)
-  end
-
-end
+#=========================================
+# Option parsing from command line
+#=========================================
 
 options = {}
 OptionParser.new do |opts|
@@ -94,7 +21,86 @@ OptionParser.new do |opts|
   opts.on("-i", "--input filename", "Input file of virtual addresses") do |i|
     options[:input] = i
   end
+
+  opts.on("-t", "--enable-tlb", "Enable the translation look-aside buffer") do |t|
+    options[:tlb] = t
+  end
 end.parse!
+
+#=========================================
+# IO driver
+#=========================================
+
+class App
+
+  def initialize(options)
+    @options = options
+  end
+
+  def start
+    initialization_file = @options.fetch(:config)
+    input_file = @options.fetch(:input)
+    enable_tlb = @options.fetch(:tlb, false)
+
+    $tlb = TLB.new # Create a TLB regardless of whether TLB is enabled or not.
+    @physical_memory_manager = PhysicalMemoryManager.new
+
+    configure(IO.readlines(initialization_file))
+    translate_virtual_addresses(IO.readlines(input_file).first, enable_tlb)
+    puts
+  end
+
+  def configure(instructions)
+    configure_page_tables(instructions.first) # first line 
+    configure_pages(instructions.last)     # second line
+  end
+
+  def configure_page_tables(config)
+    split_input_string(config, 2).each do |tokens|
+      segment, paddr = tokens.first, PhysicalAddress.new(tokens.last)
+      @physical_memory_manager.init_page_table(segment, paddr)
+    end
+  end
+
+  def configure_pages(config)
+    split_input_string(config, 3).each do |tokens|
+      page, segment, paddr = tokens[0], tokens[1], PhysicalAddress.new(tokens[2])
+      @physical_memory_manager.init_page(segment, page, paddr)
+    end
+  end
+
+  def translate_virtual_addresses(input, enable_tlb)
+    split_input_string(input, 2).each do |tokens|
+      rw_bit, vaddr = tokens.first, VirtualAddress.new(tokens.last)
+      operation = rw_bit > 0 ? :write : :read
+
+      if enable_tlb
+        entry = $tlb.retrieve(vaddr)
+        if entry.nil? # TLB miss
+          result = evaluate_physical_address(operation, vaddr)
+          (result.to_i == 0) ? print(result) : print("m #{result}")
+        else # TLB hit
+          print "h #{entry + vaddr.offset}"
+        end
+      else
+        print evaluate_physical_address(operation, vaddr)
+      end
+      print " "
+    end
+  end
+
+  def evaluate_physical_address(operation, vaddr)
+    case operation
+    when :read then return @physical_memory_manager.read_from(vaddr) 
+    when :write then return @physical_memory_manager.write_to(vaddr)
+    end
+  end
+
+  def split_input_string(str, length)
+    str.split.map(&:to_i).each_slice(length)
+  end
+
+end
 
 app = App.new(options)
 app.start

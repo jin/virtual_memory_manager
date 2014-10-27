@@ -50,17 +50,16 @@ class PhysicalMemoryManager
   def read_from(vaddr)
     st_entry = @segment_table.get_segment(vaddr.segment)
     return "pf" if st_entry == -1
-    return "error" if st_entry == 0
+    return "err" if st_entry == 0
 
     pt = $frames.get_word(st_entry / 512)
 
     pt_entry = pt.get_page(vaddr.page)
     return "pf" if pt_entry == -1
-    return "error" if pt_entry == 0
+    return "err" if pt_entry == 0
 
-    page = $frames.get_word(pt_entry / 512)
-
-    page.get_word(vaddr.offset) ? pt_entry + vaddr.offset : "error"
+    $tlb.add(vaddr, pt_entry)
+    pt_entry + vaddr.offset
   end
 
 
@@ -90,7 +89,8 @@ class PhysicalMemoryManager
       page_table.set_page(vaddr.page, pt_entry)
     end
 
-    return pt_entry + vaddr.offset
+    $tlb.add(vaddr, pt_entry)
+    pt_entry + vaddr.offset
   end
 
   private

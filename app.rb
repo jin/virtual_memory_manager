@@ -36,7 +36,7 @@ class App
       segment, paddr = slice.first, PhysicalAddress.new(slice.last)
       puts "====="
       puts "Creating page table for segment #{segment} at #{paddr.inspect}"
-      @physical_memory_manager.init_page_table(segment, paddr.frame)
+      @physical_memory_manager.init_page_table(segment, paddr)
       pp $frames
     end
   end
@@ -46,7 +46,7 @@ class App
       page, segment, paddr = slice[0], slice[1], PhysicalAddress.new(slice[2])
       puts "====="
       puts "Creating page #{page} for segment #{segment} at #{paddr.inspect} "
-      @physical_memory_manager.init_page(segment, page, paddr.frame, paddr.offset)
+      @physical_memory_manager.init_page(segment, page, paddr)
       pp $frames
     end
   end

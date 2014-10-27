@@ -91,8 +91,8 @@ class App
 
   def evaluate_physical_address(operation, vaddr)
     case operation
-    when :read then return @physical_memory_manager.read_from(vaddr) 
-    when :write then return @physical_memory_manager.write_to(vaddr)
+    when :read then @physical_memory_manager.read(vaddr) 
+    when :write then @physical_memory_manager.write(vaddr)
     end
   end
 

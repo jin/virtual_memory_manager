@@ -47,7 +47,7 @@ class PhysicalMemoryManager
   #	If a ST entry (PM[s]) or a PT entry (PM[PM[s] + p]) equals -1 then output "pf" (page fault) and continue with the next VA.
   #	If a ST entry or a PT entry equals 0, then output "error" and continue with the next VA.
   #	Otherwise output the corresponding PA = PM[PM[s] + p] + w
-  def read_from(vaddr)
+  def read(vaddr)
     st_entry = @segment_table.get_segment(vaddr.segment)
     return "pf" if st_entry == -1
     return "err" if st_entry == 0
@@ -67,7 +67,7 @@ class PhysicalMemoryManager
   #	If a ST entry or a PT entry equals ‒1 then output “pf” (page fault) and continue with the next VA.
   #	If a ST entry equals 0 then allocate a new blank PT (all zeroes), update the ST entry accordingly, and continue with the translation process; if a PT entry equals 0 then create a new blank page, and continue with the translation process.
   #	Otherwise output the corresponding PA = PM[PM[s] + p] + w
-  def write_to(vaddr)
+  def write(vaddr)
     st_entry = @segment_table.get_segment(vaddr.segment)
     return "pf" if st_entry == -1
 

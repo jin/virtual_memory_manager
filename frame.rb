@@ -1,3 +1,5 @@
+require_relative 'bitmap'
+
 class Frame
 
   def initialize(size = 512)
@@ -13,3 +15,4 @@ class Frame
   end
 
 end
+

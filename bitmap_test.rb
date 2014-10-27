@@ -27,3 +27,7 @@ class TestBitmap < Test::Unit::TestCase
   end
 
 end
+
+
+
+

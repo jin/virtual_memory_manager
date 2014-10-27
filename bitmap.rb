@@ -1,35 +1,37 @@
+require 'bitset'
+
 class Bitmap
 
   # Bitmap for keeping track of free frames
   # Size = 1024 bits
   # false => free
   # true  => occupied
-
+  
+  attr_reader :bitset
+  
   def initialize(size = 1024)
-    @map = Array.new(size, false)
+    @bitset = Bitset.new(1024)
   end
 
   def is_set?(bit)
-    check_valid_bit_index(bit)
-    @map[bit]
+    @bitset[bit]
   end
 
   def set(bit)
-    check_valid_bit_index(bit)
-    @map[bit] = true
+    @bitset.set(bit)
   end
 
   def unset(bit)
-    check_valid_bit_index(bit)
-    @map[bit] = false
+    @bitset.unset(bit)
   end
 
-  def check_valid_bit_index(bit)
-    raise 'Requested bit is outside of range' if bit < 0 || bit >= @map.length
+  def find_free_slot(size = 1)
+    index = 0
+    @bitset.to_a.each_cons(size) do |i|
+      return index if i.all? { |x| !x }
+      index += 1
+    end
+    nil
   end
-
-  private
-
-  attr_accessor :map
 
 end

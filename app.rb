@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-require 'PP'
 require 'optparse'
 require_relative 'virtual_address'
 require_relative 'physical_address'
@@ -50,9 +49,9 @@ class App
     puts
   end
 
-  def configure(instructions)
-    configure_page_tables(instructions.first) # first line 
-    configure_pages(instructions.last)     # second line
+  def configure(config)
+    configure_page_tables(config.first)
+    configure_pages(config.last)
   end
 
   def configure_page_tables(config)
@@ -72,27 +71,28 @@ class App
   def translate_virtual_addresses(input, enable_tlb)
     split_input_string(input, 2).each do |tokens|
       rw_bit, vaddr = tokens.first, VirtualAddress.new(tokens.last)
-      operation = rw_bit > 0 ? :write : :read
+      output = if enable_tlb
+                 entry = $tlb.retrieve(vaddr)
+                 if entry.nil? # TLB miss
+                   result = evaluate_virtual_address(rw_bit, vaddr)
 
-      if enable_tlb
-        entry = $tlb.retrieve(vaddr)
-        if entry.nil? # TLB miss
-          result = evaluate_physical_address(operation, vaddr)
-          (result.to_i == 0) ? print(result) : print("m #{result}")
-        else # TLB hit
-          print "h #{entry + vaddr.offset}"
-        end
-      else
-        print evaluate_physical_address(operation, vaddr)
-      end
-      print " "
+                   # Check if result is err/pf or physical address
+                   (result.to_i == 0) ? result : "m #{result}"
+                 else # TLB hit
+                   "h #{entry + vaddr.offset}"
+                 end
+               else
+                 evaluate_virtual_address(rw_bit, vaddr)
+               end
+
+      $stdout << "#{output} "
     end
   end
 
-  def evaluate_physical_address(operation, vaddr)
-    case operation
-    when :read then @physical_memory_manager.read(vaddr) 
-    when :write then @physical_memory_manager.write(vaddr)
+  def evaluate_virtual_address(rw_bit, vaddr)
+    case rw_bit
+    when 0 then @physical_memory_manager.read(vaddr)
+    when 1 then @physical_memory_manager.write(vaddr)
     end
   end
 

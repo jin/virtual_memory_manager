@@ -93,6 +93,14 @@ class PhysicalMemoryManager
     return pt_entry + vaddr.offset
   end
 
+  private
+
+  def init_segment_table
+    @segment_table = SegmentTable.new
+    $frames.set_word(SEGMENT_TABLE_FRAME_INDEX, @segment_table)
+    $bm.set(SEGMENT_TABLE_FRAME_INDEX)
+  end
+
   def create_page_table(idx)
     pt = PageTable.new(1024)
     $frames.set_word(idx, pt)
@@ -107,12 +115,5 @@ class PhysicalMemoryManager
     $bm.set(idx)
   end
 
-  private
-
-  def init_segment_table
-    @segment_table = SegmentTable.new
-    $frames.set_word(SEGMENT_TABLE_FRAME_INDEX, @segment_table)
-    $bm.set(SEGMENT_TABLE_FRAME_INDEX)
-  end
 
 end

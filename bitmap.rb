@@ -21,8 +21,8 @@ class Bitmap
   end
 
   def find_free_slot(size = 1)
-    index = 0
-    @bitset.to_a.each_cons(size) do |i|
+    index = 1
+    @bitset.to_a[1..-1].each_cons(size) do |i|
       return index if i.all? { |x| !x }
       index += 1
     end

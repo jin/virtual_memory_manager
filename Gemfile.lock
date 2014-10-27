@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     PriorityQueue (0.1.2)
-    awesome_print (1.2.0)
+    bitset (0.1.0)
     lrucache (0.1.4)
       PriorityQueue (~> 0.1.2)
 
@@ -10,5 +10,5 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  awesome_print
+  bitset
   lrucache

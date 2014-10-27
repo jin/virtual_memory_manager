@@ -17,7 +17,7 @@ class Bitmap
   end
 
   def unset(bit)
-    @bitset.unset(bit)
+    @bitset.clear(bit)
   end
 
   def find_free_slot(size = 1)

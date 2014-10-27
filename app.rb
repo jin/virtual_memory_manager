@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-require 'PP'
 require 'optparse'
 require_relative 'virtual_address'
 require_relative 'physical_address'

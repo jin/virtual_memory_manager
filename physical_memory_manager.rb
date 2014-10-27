@@ -1,3 +1,4 @@
+require_relative 'bitmap'
 require_relative 'frame'
 require_relative 'page'
 require_relative 'segment_table'
@@ -43,10 +44,10 @@ class PhysicalMemoryManager
   # ======================================================================
   # NORMAL R/W OPERATIONS
 
-  #	For a read operation to the VA:
-  #	If a ST entry (PM[s]) or a PT entry (PM[PM[s] + p]) equals -1 then output "pf" (page fault) and continue with the next VA.
-  #	If a ST entry or a PT entry equals 0, then output "error" and continue with the next VA.
-  #	Otherwise output the corresponding PA = PM[PM[s] + p] + w
+  # For a read operation to the VA:
+  # If a ST entry (PM[s]) or a PT entry (PM[PM[s] + p]) equals -1 then output "pf" (page fault) and continue with the next VA.
+  # If a ST entry or a PT entry equals 0, then output "error" and continue with the next VA.
+  # Otherwise output the corresponding PA = PM[PM[s] + p] + w
   def read(vaddr)
     st_entry = @segment_table.get_segment(vaddr.segment)
     return "pf" if st_entry == -1
@@ -63,10 +64,10 @@ class PhysicalMemoryManager
   end
 
 
-  #	For a write operation to the VA:
-  #	If a ST entry or a PT entry equals ‒1 then output “pf” (page fault) and continue with the next VA.
-  #	If a ST entry equals 0 then allocate a new blank PT (all zeroes), update the ST entry accordingly, and continue with the translation process; if a PT entry equals 0 then create a new blank page, and continue with the translation process.
-  #	Otherwise output the corresponding PA = PM[PM[s] + p] + w
+  # For a write operation to the VA:
+  # If a ST entry or a PT entry equals -1 then output "pf" (page fault) and continue with the next VA.
+  # If a ST entry equals 0 then allocate a new blank PT (all zeroes), update the ST entry accordingly, and continue with the translation process; if a PT entry equals 0 then create a new blank page, and continue with the translation process.
+  # Otherwise output the corresponding PA = PM[PM[s] + p] + w
   def write(vaddr)
     st_entry = @segment_table.get_segment(vaddr.segment)
     return "pf" if st_entry == -1
@@ -82,6 +83,7 @@ class PhysicalMemoryManager
 
     pt_entry = page_table.get_page(vaddr.page)
     return "pf" if pt_entry == -1
+
     if pt_entry == 0
       idx = $bm.find_free_slot(1)
       create_page(idx)
@@ -114,6 +116,5 @@ class PhysicalMemoryManager
     $frames.set_word(idx, page)
     $bm.set(idx)
   end
-
 
 end

@@ -3,7 +3,7 @@ require 'bitset'
 class Bitmap
 
   attr_reader :bitset
-  
+
   def initialize(size = 1024)
     @bitset = Bitset.new(1024)
   end

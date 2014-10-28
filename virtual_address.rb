@@ -16,7 +16,7 @@ class VirtualAddress < Address
   end
 
   def partition(address)
-    offset = address & (511 - 1)
+    offset = address & (511)
     page = (address & (1023 << 9)) >> 9
     segment = (address & (511 << 19)) >> 19
     [segment, page, offset]

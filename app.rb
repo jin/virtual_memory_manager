@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'optparse'
+require 'PP'
 require_relative 'virtual_address'
 require_relative 'physical_address'
 require_relative 'physical_memory_manager'
@@ -24,6 +25,10 @@ OptionParser.new do |opts|
   opts.on("-t", "--enable-tlb", "Enable the translation look-aside buffer") do |t|
     options[:tlb] = t
   end
+
+  opts.on("-v", "--verbose", "Verbose mode") do |v|
+    options[:verbose] = v
+  end
 end.parse!
 
 #=========================================
@@ -40,6 +45,7 @@ class App
     initialization_file = @options.fetch(:config)
     input_file = @options.fetch(:input)
     enable_tlb = @options.fetch(:tlb, false)
+    @verbose = @options.fetch(:verbose, false)
 
     $tlb = TLB.new # Create a TLB regardless of whether TLB is enabled or not.
     @physical_memory_manager = PhysicalMemoryManager.new
@@ -71,6 +77,7 @@ class App
   def translate_virtual_addresses(input, enable_tlb)
     split_input_string(input, 2).each do |tokens|
       rw_bit, vaddr = tokens.first, VirtualAddress.new(tokens.last)
+      print "\n#{rw_bit == 0 ? "read" : "write"} Address #{tokens.last} Segment #{vaddr.segment}, Page #{vaddr.page}, Offset #{vaddr.offset}. Result: " if @verbose
       output = if enable_tlb
                  entry = $tlb.retrieve(vaddr)
                  if entry.nil? # TLB miss
@@ -85,7 +92,8 @@ class App
                  evaluate_virtual_address(rw_bit, vaddr)
                end
 
-      $stdout << "#{output} "
+      print "#{output} "
+      # pp $frames
     end
   end
 

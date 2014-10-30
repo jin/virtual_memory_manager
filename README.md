@@ -21,7 +21,7 @@ Optional modifiers:
   components and operations.
 
 ```shell
-ruby app.rb --config configuration.txt --input virtual_addresses.rb [--enable-tlb] [--verbose] > output.txt
+ruby app.rb --config configuration.txt --input virtual_addresses.txt [--enable-tlb] [--verbose] > output.txt
 ```
 
 ## Explanation

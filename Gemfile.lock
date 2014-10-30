@@ -1,14 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    PriorityQueue (0.1.2)
     bitset (0.1.0)
-    lrucache (0.1.4)
-      PriorityQueue (~> 0.1.2)
+    lru_redux (0.8.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   bitset
-  lrucache
+  lru_redux

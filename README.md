@@ -29,9 +29,9 @@ ruby app.rb --config configuration.txt --input virtual_addresses.rb [--enable-tl
 Each virtual address is a 32-bit integer. It is broken down, from the LSB,
 accordingly:
 
-Bits [0-9]: offset
-Bits [10-19]: page
-Bits [19-28]: segment
+* Bits [0-9]: offset 
+* Bits [10-19]: page
+* Bits [19-28]: segment
 
 The physical memory is represented by 1024 frames of 512 words each. The
 segment table lives in the first frame, i.e. frame 0 ~ physical address 0 to

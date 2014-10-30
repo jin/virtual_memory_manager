@@ -1,4 +1,3 @@
-# require 'lrucache'
 require 'lru_redux'
 
 class TLB
